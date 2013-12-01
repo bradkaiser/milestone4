@@ -1,0 +1,176 @@
+\documentclass{article}
+
+\usepackage{times}
+\usepackage{uist07}
+\usepackage{cite}
+\usepackage{graphicx}
+
+\begin{document}
+
+% --- Copyright notice ---
+\CopyrightYear{2013}
+
+% Uncomment the following line to hide the copyright notice
+ \toappear{}
+ %------------------------
+
+\title{Transcribing a Sung or Whistled Melody in the Browser}
+
+%%
+%% Note on formatting authors at different institutions, as shown below:
+%% Change width arg (currently 7cm) to parbox commands as needed to
+%% accommodate widest lines, taking care not to overflow the 17.8cm line width.
+%% Add or delete parboxes for additional authors at different institutions. 
+%% If additional authors won't fit in one row, you can add a "\\"  at the
+%% end of a parbox's closing "}" to have the next parbox start a new row.
+%% Be sure NOT to put any blank lines between parbox commands!
+%%
+
+\author{
+\parbox[t]{7cm}{\centering
+	     {\em Brad Kaiser}\\
+	     Georgia Institute of Technology\\
+             225 North Ave NW\\
+	     Atlanta, Ga 30332\\
+	     gtg302b@mail.gatech.edu}
+\parbox[t]{7cm}{\centering
+	     {\em Vinai Suresh}\\
+	     Georgia Institute of Technology\\
+             251 10th St. NW\\
+	     Atlanta, Ga 30318\\
+	     vinaisuresh9@mail.gatech.edu}	
+}
+
+\maketitle
+
+\abstract
+This paper presents a system for transcribing a whistled or sung melody into
+musical notation for the purpose of musical composition. We are extending 
+previous work in this area in several ways with a focus on making composition 
+extremely easy for the laymen. First, we are implementing solely in the browser, which
+will make our application much more accessible than if it was an compiled program that had to 
+be downloaded and installed. Second, we will combine signal processing techniques to allow for the more complex case of sung input. 
+Finally, we will include a mechanism for inputting a rhythm. 
+
+\classification{
+H.5.1 [Information interfaces and Presentation]:
+Multimedia Information Systems - Audio input output; H.5.3
+[Information Interfaces and Presentation]: Group and Organization Interfaces - Web-based interaction}
+
+\terms{Human Factors}
+
+\keywords{Music Audio Web}
+
+\tolerance=400 
+  % makes some lines with lots of white space, but 	
+  % tends to prevent words from sticking out in the margin
+
+\section{INTRODUCTION}
+Computers have a long history of lowering the barrier of entry to different modes of creative expression. It is now easier than ever to edit our own video, 
+manipulate our own photos, and publish our writing. We'd like to extend this ease to musical composition. To write out a musical composition requires
+formal musical skills that most people do not have. However most people do have some innate musical talent, and many could whistle or sing a tune easily. If we could harness these informal skills, we would sidestep a huge
+barrier to entry. There has been successful work in this area, see \cite{2011Toh,2010Shen}. We aim to extend this work by first making our application effortlessly accessible. 
+This entail putting it on the web and implementing in the browser. Second we  will accept voiced input and not just whistling. Third, these implementations are only concerned with melody, we aim to also have the means of inputting a rhythm.
+
+\section{INPUT}
+Our application aims to take a variety of inputs that are easily produced by most people. This includes whistling, singing, clapping, and snapping. We will allow the user to select between a melody and rhythm mode of input. The ideal case would be to recognize different types of input, i.e. whistling versus clapping, and adjust accordingly, and there is some applicable research \cite{2008Nilsson}, but it is not clear this will be achievable.
+
+It will also be important to implement some sort of semantic snapping that will map the user's input to the nearest quarter tone. One problem with this idea is the length of notes that the user may want. Most music does not just have one type of note, such as a quarter note. Therefore we would like to have a system to create half notes, full notes, and shorter notes, like an eighth note. We will check lengths of the whistling/humming, and snap the notes to the nearest tone depending on its length. Users will also be able to click on a specific section of the music and begin to edit from there, including recording over previously recorded music.
+
+Once notes are on the sheet music on screen, users will be able to move notes around or delete notes. This will allow for a more fine-tuned control over the music, as audio capture through the microphone could lead to some amount of error. 
+
+\subsection{Whistling}
+The first type of input our app will accept is whistling, because this is the easiest to analyze. 
+A whistle is already relatively close to a pure tone and we can pick out the dominant frequency with
+just a Fourier transform. The average human can whistle from 500 to 5000Hz \cite{2008Nilsson}. This puts the lowest whistled note well above middle C, but does give you several octaves to work with. 
+
+\begin{figure}[h]
+    \caption{An example of the spectrum and cepstrum of the human voice. \cite{ee649}}
+    \includegraphics[width=0.5\textwidth]{cepstrum.pdf}
+\end{figure}
+
+\subsection{Singing}
+The second mode of input we will accept is singing. The human voice is much more complex than a whistle
+and is harder to analyze. The voice usually has many large many overtones without a dominant frequency.
+There are several methods to estimate pitch, we will be using cepstral analysis which is often used for speech.
+this usage was pioneered by Noll in 1967 \cite{1967Noll}.  At this point we are beyond the audio analyzes 
+available in HTML5, and we will need to implement this ourselves.
+
+\subsection{Percussion}
+Finally we want to accept rhythmic percussion input. We have not seen this incorporated with any of the other whistled 
+input systems we've reviewed, which have focused only on melody. Given that modern music often has a strong beat, it seems like this would be a popular feature.
+The average laymen will not be able to play drums, but many people could snap or clap a regular beat, at least for a few measures. Once the beat was established, the user could repeat it for their entire composition. 
+A minimal implementation of this would be to 
+listen for a single type of repeated percussive sound, such as clapping or snapping, and pick out a drum beat from there, using the note detection techniques described in \cite{2005Ryynanen}.
+A more complex implementation would accept multiple types of percussive input, i.e. drumming on a desk or beatboxing and mapping that to different drum parts. See Stowell's work for an example of this \cite{2010Stowell}. 
+
+\section{OUTPUT}
+Our application will have several different outputs. As the user is working, they will be able to listen to their composition played to them through MIDI. This will give them a preview of the final result and make it possible to edit their composition. When the user is finished, they will have the option to print the sheet music generated, or download a MIDI file of their composition. For simplicity, only common time, 4 quarter notes to a measure, will be used for this musical notation \cite{2004Baird}.
+
+\section{USER INTERFACE}
+Our main goal in the interface is to keep it as simple as possible. Ideally our interface
+will mostly present a page of empty sheet music. The key affordance we will offer is that 
+when the user starts whistling or singing, notes will begin to appear.
+
+The notes will be animated in with a fade-type animation. As the user will be provided with only a canvas of sheet music and a couple buttons, animations will be vital in providing a good user experience. We would like the users to feel immersed in the program and animations will provide a gateway for this. Animation has been show to increase the appeal of a user interface \cite{2008Dyer}. Check \cite{2012Joshi} for the different types of animations and transitions available with CSS3.  Once the notes are on the page, the user will be able to highlight them and then move them around to different areas of the page, as well as make copies of the notes. Notes will also be able to be changed from different note types, such as half to full, and so on. 
+
+On the screen there will be a couple buttons that allow for the user to change their recording mode, as well as if they are currently recording. The main button will be the record/stop button which will tell the program to start listening for musical input and when it should stop. Another button will deal with whether the user is in beat input mode or melody input mode. Since users  will only be able to input a monochromatic melody, there will be no structure for inputting chords. Therefore the melody input mode will only allow for single note types, whether whistled or hummed. The beat input mode will allow for the users to make non-pitch input, such as clapping or banging on other objects, such as a desk. These will be translated to a drum-type sound which will be used for the actual sound output. 
+
+
+\begin{figure}[t]
+    \caption{Example of simple layout of webpage. Will have blank sheet music and two buttons.}
+    \includegraphics[width=0.5\textwidth]{blank_sheet_music.png}
+\end{figure}
+
+
+\begin{figure}[h]
+    \caption{Example of Clefs. Top bar will be used for melody, and bottom bar will be used for percussion.}
+    \includegraphics[width=0.5\textwidth]{clefs_with_drums.png}
+\end{figure}
+
+
+
+
+\section{IMPLEMENTATION}
+Our app is going to be implemented in the browser using HTML5 and javascript without any browser plugins like Flash or Silverlight. 
+This has only recently become possible with the inclusion of the web audio api in HTML5. We will also be using open source javascript 
+libraries whenever available to avoid duplicating any programming effort. MIDI.js will provide the midi playback of the user's composition. 
+To help analyze our audio input we will expand upon the functionality in Dsp.js. To logically represent the user's musical input, we will take 
+advantage of MusicJSON, which is a JSON version of MusicXML an open format for representing musical notation. Finally, we will take some inspiration from VexFlow, a 
+javascript library for representing notes and staves using the HTML canvas element.
+
+\subsection{Affordance}
+
+Affordance will be plenty, in that with the simple interface, it will be easy for users to know what they should do. The user will be presented with a blank page of sheet music, as well as two buttons, one for recording and one for changing the input type. The users will know that the record button will be used for actually recording the music, and when recording, this button will change to a stop button to show that the user will press it to stop recording.
+
+The user will be able to know that the longer they hum a note, the longer it will appear on the page. This will happen relatively easily, as the user will delve into using the application and pick up very quickly that it responds to the length of time hummed or whistled.
+
+Notes will also have a depth-like quality to them, indicating that they can be picked up and moved on a flat background.
+
+\subsection{Feedback}
+Feedback will include a play button that will allow the user to playback the music that is currently recorded. This will play back in a MIDI format. Once the user has clicked on a certain section of the music, they can playback from that section to the end of recorded music. 
+
+When a user clicks a note, the note will be highlighted, indicating that the note is the current focus of the program. From there the user will be able to change the length of the note, as well as where it is located within the sheet music. If the user clicks on the playback button mentioned above, the music will playback from the highlighted note to the end of the song.
+
+Hovering over a note will change the cursor and show the user that they will be able to interact with individual notes. This is a key feedback mechanism, as it will show the user that they have a more direct control of the music, instead of just microphone input.
+
+
+\subsection{Mechanics}
+The quality of the mechanics of the user interface of our app depend largely on the quality of our interpretation of the user input. 
+If we are successful in accurately transcribing the user's input, then the mechanics of our app should be excellent, because we will
+be capitalizing on common skills the user practices every day. 
+
+We can improve the mechanics of the app further by making use of semantic snapping to gently correct the user's input. Though we are using well 
+practiced skills, the user will probably be off key, and their timing will probably be slightly off.  We will correct this by snapping the input to the nearest quarter 
+tone and standard note duration. This way our interpretation of the user's performance is better than perfect. 
+
+\section{RESPONSE TO PRELIMINARY PROPOSAL}
+In response to the feedback from our preliminary proposal we have made several changes to our project. First we are accepting voiced input which will require analysis beyond just a FFT. As such we cannot rely completely on the web audio api. Secondly we are accepting a second mode of input for the beat. Not only will this be a fun feature, but it is also a new feature that we have not seen in any other music transcription applications in the literature.
+
+\nocite{*}
+
+
+\bibliographystyle{plain}
+\bibliography{UIProject}
+
+\end{document}
