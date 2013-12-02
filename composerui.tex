@@ -44,7 +44,7 @@
 \maketitle
 
 \abstract
-This paper presents a system for transcribing a whistled or sung melody into
+This paper presents a system for transcribing a whistled or sung melody directly into
 musical notation for the purpose of musical composition. We are extending 
 previous work in this area in several ways with a focus on making composition 
 extremely easy for the laymen. First, we are implementing solely in the browser, which
@@ -73,7 +73,16 @@ barrier to entry. There has been successful work in this area, see \cite{2011Toh
 This entail putting it on the web and implementing in the browser. Second we  will accept voiced input and not just whistling. Third, these implementations are only concerned with melody, we aim to also have the means of inputting a rhythm.
 
 \section{INPUT}
-Our application aims to take a variety of inputs that are easily produced by most people. This includes whistling, singing, clapping, and snapping. We will allow the user to select between a melody and rhythm mode of input. The ideal case would be to recognize different types of input, i.e. whistling versus clapping, and adjust accordingly, and there is some applicable research \cite{2008Nilsson}, but it is not clear this will be achievable.
+Our application takes a variety of inputs easily produced by most people such as whistling, singing, and clapping. Initially we were concerned that we would require the user to specify what kind of input they were providing, but this turned out to unnecessary. We can run our pitch detection and beat detection concurrently without any issue. Our pitch detection library also works on both whistling and singing. 
+
+\subsection{Semantic Snapping and Constraints}
+While this project is predicated on the idea that most people have some innate musical talent, it is clear that most people can't carry a tune or keep a beat very well. To account for this we snap user input to the nearest semitone and note duration. We do not try to detect anything shorter than a thirty-second note. We assume a standard A440 tuning which sets middle A at 440 Hz, and we assume a tempo of 120 bpm (beats per minute) in 4 4 time, which is a common moderate tempo. These assumptions are hardcoded, though it would be easier in the future to make them adjustable. 
+
+\subsection{Pitch Detection}
+We tried several different algorithms for pitch detection before settling on an open source solution based on wavelet analysis \cite{2010Schmitt}. In the initial conception for this application, we would only accept whistled input, and use straightforward fourier analysis to detect the pitch. In practice this worked ok. A whistle is close enough to a pure tone that its spectrum has a nice clearly defined peak. There were too big problems with this approach. The first is that it does not work at all for sung input, the spectrum of the human voice is complicated, and does not have a clear dominant frequency. The second is that at our sampling rate, 44100Hz, we just have enough time and frequency resolution to separate semitones within the span of a thirty-second note. At our 120 bpm a thirty-second note is 62.5 ms long, so we can take at most 2756 samples at a time to analyze. Since the discrete fourier transform demands samples in a power of two, we take 2048 samples. With that many samles, we only have a frequency resolution of 21Hz. This is enough to differentiate semitones at the relatively high frequencies where whistling occurs, but since the musical scale is logarithmic, it is no longer enough once you get around middle C.
+
+
+
 
 It will also be important to implement some sort of semantic snapping that will map the user's input to the nearest quarter tone. One problem with this idea is the length of notes that the user may want. Most music does not just have one type of note, such as a quarter note. Therefore we would like to have a system to create half notes, full notes, and shorter notes, like an eighth note. We will check lengths of the whistling/humming, and snap the notes to the nearest tone depending on its length. Users will also be able to click on a specific section of the music and begin to edit from there, including recording over previously recorded music.
 
