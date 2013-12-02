@@ -118,39 +118,40 @@ Finally, since the source spectra varies quickly and the tract spectra varies sl
 
 \[\mathfrak{F}[\log(|F(\omega)|^2)] = \mathfrak{F}[\log(|S(\omega)|^2)] + \mathfrak{F}[\log(|H(\omega)|^2)] \]
 
-Unfortunately, in practice, we were never able to get a clear separation between the source and tract signals, and could not use this method for pitch detection.
+In practice, we were never able to get a clear separation between the source and tract signals, and could not use this method for pitch detection.
 
+Fortunately, we found an open source pitch tracking library, dywapitchtrack \cite{2010Schmitt}.
+The library was written in C, so we had to compile it into javascript with emscripten.
+The library takes an array of raw audio data and returns a frequency and a confidence value. 
+It also detects whether there is currently input or not. If the input is silent, it returns a null pitch value.
+It was able to pitch detect a human voice very well, as well as whistling. 
 
-
-
-It will also be important to implement some sort of semantic snapping that will map the user's input to the nearest quarter tone. One problem with this idea is the length of notes that the user may want. Most music does not just have one type of note, such as a quarter note. Therefore we would like to have a system to create half notes, full notes, and shorter notes, like an eighth note. We will check lengths of the whistling/humming, and snap the notes to the nearest tone depending on its length. Users will also be able to click on a specific section of the music and begin to edit from there, including recording over previously recorded music.
-
-Once notes are on the sheet music on screen, users will be able to move notes around or delete notes. This will allow for a more fine-tuned control over the music, as audio capture through the microphone could lead to some amount of error. 
-
-\subsection{Whistling}
-The first type of input our app will accept is whistling, because this is the easiest to analyze. 
-A whistle is already relatively close to a pure tone and we can pick out the dominant frequency with
-just a Fourier transform. The average human can whistle from 500 to 5000Hz \cite{2008Nilsson}. This puts the lowest whistled note well above middle C, but does give you several octaves to work with. 
+\subsection{Note Separation}
+Though the dywapitchtrack library neatly solved our pitch detection problem, we still do not have notes, just a stream of frequency values.
+We need to determine a note's duration and pitch.
+To do this the application has a buffer where we can accumulate frequency results and examine them with context.
+We accumulate ten results, then break them into groups by null results.
+We found that the dywapitchtrack algorithm frequently returned spurious low frequency results during periods of silence, so if any group of results would be shorter than a thirty-second note, we drop it.
+Any remaining groups are assigned a note type based on their duration and passed to the layout engine. 
+The note type is the largest that will fit in the duration of the result group.
+The pitch assigned to the note is the median of the frequency results included. 
+If there are results at the end of the buffer, we leave them to be examined in the next cycle. This way, we can avoid splitting up long notes.
 
 \begin{figure}[h]
     \caption{An example of the spectrum and cepstrum of the human voice. \cite{ee649}}
     \includegraphics[width=0.5\textwidth]{cepstrum.pdf}
 \end{figure}
 
-\subsection{Singing}
-The second mode of input we will accept is singing. The human voice is much more complex than a whistle
-and is harder to analyze. The voice usually has many large many overtones without a dominant frequency.
-There are several methods to estimate pitch, we will be using cepstral analysis which is often used for speech.
-this usage was pioneered by Noll in 1967 \cite{1967Noll}.  At this point we are beyond the audio analyzes 
-available in HTML5, and we will need to implement this ourselves.
-
-\subsection{Percussion}
-Finally we want to accept rhythmic percussion input. We have not seen this incorporated with any of the other whistled 
-input systems we've reviewed, which have focused only on melody. Given that modern music often has a strong beat, it seems like this would be a popular feature.
-The average laymen will not be able to play drums, but many people could snap or clap a regular beat, at least for a few measures. Once the beat was established, the user could repeat it for their entire composition. 
-A minimal implementation of this would be to 
-listen for a single type of repeated percussive sound, such as clapping or snapping, and pick out a drum beat from there, using the note detection techniques described in \cite{2005Ryynanen}.
-A more complex implementation would accept multiple types of percussive input, i.e. drumming on a desk or beatboxing and mapping that to different drum parts. See Stowell's work for an example of this \cite{2010Stowell}. 
+\subsection{Beat Detection}
+Beat detection was considerably easier than pitch detection. We wanted to be able to detect when a user clapped or snapped, and treat that like a percussion instrument.
+We passed the raw audio input through a high pass filter to remove all of the melodic frequency components. 
+This only left high frequency components from staccatto noises. 
+Then we just registered a percussion event whenever the intensity of the resulting signal passed a certain threshold. 
+We determined the cutoff frequency and power thresholed empirically.
+The only way to determine how long a drum beat should be is to wait for the next drum beat, so for beat detection we set up a two element buffer. 
+When a beat is detected, it sits in the buffer until the next beat is detected.
+At that point we can determine the duration of the first beat, so we publish it and remove it from the buffer.
+Then the second beat has to wait. 
 
 \section{OUTPUT}
 Our application will have several different outputs. As the user is working, they will be able to listen to their composition played to them through MIDI. This will give them a preview of the final result and make it possible to edit their composition. When the user is finished, they will have the option to print the sheet music generated, or download a MIDI file of their composition. For simplicity, only common time, 4 quarter notes to a measure, will be used for this musical notation \cite{2004Baird}.
