@@ -4,6 +4,8 @@
 \usepackage{uist07}
 \usepackage{cite}
 \usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{eufrak}
 
 \begin{document}
 
@@ -43,7 +45,7 @@
 
 \maketitle
 
-\abstract
+\section{ABSTRACT}
 This paper presents a system for transcribing a whistled or sung melody directly into
 musical notation for the purpose of musical composition. We are extending 
 previous work in this area in several ways with a focus on making composition 
@@ -73,13 +75,50 @@ barrier to entry. There has been successful work in this area, see \cite{2011Toh
 This entail putting it on the web and implementing in the browser. Second we  will accept voiced input and not just whistling. Third, these implementations are only concerned with melody, we aim to also have the means of inputting a rhythm.
 
 \section{INPUT}
-Our application takes a variety of inputs easily produced by most people such as whistling, singing, and clapping. Initially we were concerned that we would require the user to specify what kind of input they were providing, but this turned out to unnecessary. We can run our pitch detection and beat detection concurrently without any issue. Our pitch detection library also works on both whistling and singing. 
+Our application takes a variety of inputs easily produced by most people such as whistling, singing, and clapping.
+Initially we were concerned that we would require the user to specify what kind of input they were providing, but this turned out to unnecessary.
+We can run our pitch detection and beat detection concurrently without any issue. Our pitch detection library also works on both whistling and singing. 
 
 \subsection{Semantic Snapping and Constraints}
-While this project is predicated on the idea that most people have some innate musical talent, it is clear that most people can't carry a tune or keep a beat very well. To account for this we snap user input to the nearest semitone and note duration. We do not try to detect anything shorter than a thirty-second note. We assume a standard A440 tuning which sets middle A at 440 Hz, and we assume a tempo of 120 bpm (beats per minute) in 4 4 time, which is a common moderate tempo. These assumptions are hardcoded, though it would be easier in the future to make them adjustable. 
+While this project is predicated on the idea that the average person has some innate musical talent, it is clear that most people can't carry a tune or keep a beat very well.
+To account for this we snap user input to the nearest semitone and note duration.
+We do not try to detect anything shorter than a thirty-second note.
+We assume a standard A440 tuning which sets middle A at 440 Hz, and we assume a tempo of 120 bpm (beats per minute) in 4 4 time, which is a common moderate tempo.
+These assumptions are hardcoded, though it would be easier in the future to make them adjustable. 
 
 \subsection{Pitch Detection}
-We tried several different algorithms for pitch detection before settling on an open source solution based on wavelet analysis \cite{2010Schmitt}. In the initial conception for this application, we would only accept whistled input, and use straightforward fourier analysis to detect the pitch. In practice this worked ok. A whistle is close enough to a pure tone that its spectrum has a nice clearly defined peak. There were too big problems with this approach. The first is that it does not work at all for sung input, the spectrum of the human voice is complicated, and does not have a clear dominant frequency. The second is that at our sampling rate, 44100Hz, we just have enough time and frequency resolution to separate semitones within the span of a thirty-second note. At our 120 bpm a thirty-second note is 62.5 ms long, so we can take at most 2756 samples at a time to analyze. Since the discrete fourier transform demands samples in a power of two, we take 2048 samples. With that many samles, we only have a frequency resolution of 21Hz. This is enough to differentiate semitones at the relatively high frequencies where whistling occurs, but since the musical scale is logarithmic, it is no longer enough once you get around middle C.
+We tried several different algorithms for pitch detection before settling on an open source solution based on wavelet analysis \cite{2010Schmitt}.
+In the initial conception for this application, we would only accept whistled input, and use straightforward fourier analysis to detect the pitch.
+In practice this worked ok.
+A whistle is close enough to a pure tone that its spectrum has a nice clearly defined peak.
+There were two big problems with this approach.
+The first is that it does not work at all for sung input, the spectrum of the human voice is complicated, and does not have a clear dominant frequency.
+The second is that at our sampling rate, 44100Hz, we only just have enough time and frequency resolution to separate semitones within the span of a thirty-second note.
+At our 120 bpm a thirty-second note is 62.5 ms long, so we can take at most 2756 samples at a time to analyze.
+Since the discrete fourier transform demands samples in a power of two, we take 2048 samples.
+With that many samles, we only have a frequency resolution of 21Hz.
+This is enough to differentiate semitones at the relatively high frequencies where whistling occurs, but since the musical scale is logarithmic, it is no longer enough once you get around middle C.
+
+Since we wanted to pitch detect sung as well as whistled input, we tried another pitch detection technique, cepstral analysis pioneered by Noll in 1967 \cite{1967Noll}.
+As Noll explains it, the output of human speech \(f(t)\) is the product of a source signal \(s(t)\) convolved with the response of the vocal tract \(h(t)\). 
+
+\[f(t) = s(t) \ast h(t)\] 
+
+This means the power spectrum of the output signal will be the product of the power spectra of the source and vocal tract.
+
+\[|F(\omega)|^2 = |S(\omega)|^2 \cdot |H(\omega)|^2 \]
+
+We are only interested in the source signal, so it is necessary to make it easily seperable and identifiable from the tract signal.
+Noll suggests the logarithm to make the two signals additive.
+
+\[\log(|F(\omega)|^2) = \log(|S(\omega)|^2 |H(\omega)|^2) \]
+\[\log(|F(\omega)|^2) = \log(|S(\omega)|^2) + \log(|H(\omega)|^2) \]
+
+Finally, since the source spectra varies quickly and the tract spectra varies slowly, we can apply the fourier transform again, and completely separate the two signals by looking at the "frequency" of their spectra.
+
+\[\mathfrak{F}[\log(|F(\omega)|^2)] = \mathfrak{F}[\log(|S(\omega)|^2)] + \mathfrak{F}[\log(|H(\omega)|^2)] \]
+
+Unfortunately, in practice, we were never able to get a clear separation between the source and tract signals, and could not use this method for pitch detection.
 
 
 
