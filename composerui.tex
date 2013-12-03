@@ -74,6 +74,7 @@ formal musical skills that most people do not have. However most people do have 
 barrier to entry. There has been successful work in this area, see \cite{2011Toh,2010Shen}. We aim to extend this work by first making our application effortlessly accessible. 
 This entail putting it on the web and implementing in the browser. Second we  will accept voiced input and not just whistling. Third, these implementations are only concerned with melody, we aim to also have the means of inputting a rhythm.
 
+
 \section{INPUT}
 Our application takes a variety of inputs easily produced by most people such as whistling, singing, and clapping.
 Initially we were concerned that we would require the user to specify what kind of input they were providing, but this turned out to unnecessary.
@@ -181,16 +182,6 @@ On the screen there will be a couple buttons that allow for the user to change t
 \end{figure}
 
 
-
-
-\section{Implementation}
-Our app is going to be implemented in the browser using HTML5 and javascript without any browser plugins like Flash or Silverlight. 
-This has only recently become possible with the inclusion of the web audio api in HTML5. We will also be using open source javascript 
-libraries whenever available to avoid duplicating any programming effort. MIDI.js will provide the midi playback of the user's composition. 
-To help analyze our audio input we will expand upon the functionality in Dsp.js. To logically represent the user's musical input, we will take 
-advantage of MusicJSON, which is a JSON version of MusicXML an open format for representing musical notation. Finally, we will take some inspiration from VexFlow, a 
-javascript library for representing notes and staves using the HTML canvas element.
-
 \subsection{Affordance}
 
 Affordance will be plenty, in that with the simple interface, it will be easy for users to know what they should do. The user will be presented with a blank page of sheet music, as well as two buttons, one for recording and one for changing the input type. The users will know that the record button will be used for actually recording the music, and when recording, this button will change to a stop button to show that the user will press it to stop recording.
@@ -216,8 +207,9 @@ We can improve the mechanics of the app further by making use of semantic snappi
 practiced skills, the user will probably be off key, and their timing will probably be slightly off.  We will correct this by snapping the input to the nearest quarter 
 tone and standard note duration. This way our interpretation of the user's performance is better than perfect. 
 
-\section{RESPONSE TO PRELIMINARY PROPOSAL}
-In response to the feedback from our preliminary proposal we have made several changes to our project. First we are accepting voiced input which will require analysis beyond just a FFT. As such we cannot rely completely on the web audio api. Secondly we are accepting a second mode of input for the beat. Not only will this be a fun feature, but it is also a new feature that we have not seen in any other music transcription applications in the literature.
+
+
+
 
 \nocite{*}
 
