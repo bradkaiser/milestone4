@@ -83,11 +83,16 @@ Firefox only supported a deprecated version of the API until very recently, and 
 Additionally, Chrome works best with the MIDI library we used, and supports high quality ogg format soundfonts, for use with MIDI.
 For the scope of this project we did not want to spend effort ensuring cross-browser compatibility for our app.
 In the future we would could make our app work with more browsers as the Web Audio API becomes more widely supported.
-According to the W3C statistics of this year, Chrome is the most popular browser, so our scope covers a large majority of Internet users.
+According to the W3C statistics of this year, Chrome is the most popular browser, so our scope covers a large majority of internet users.
 
 \subsection{Architecture}
-
-
+This application needs to solve two major problems. 
+How to translate audio input into musical notation, and how to display musical notation output.
+To make development easier we decoupled these two problems.
+We wrote a note detecting engine that sets up the microphone connection using the web audio api and processes the raw audio input.
+When it picks out a note from the microphone it publishes a custom javascript event.
+We also wrote a note layout engine that listens for these event, and keeps track of a musical staff and can add notes and lay them out correctly.
+When it intercepts a note event, it adds the note to DOM.
 
 \section{INPUT}
 Our application takes a variety of inputs easily produced by most people such as whistling, singing, and clapping.
@@ -223,12 +228,17 @@ practiced skills, the user will probably be off key, and their timing will proba
 tone and standard note duration. This way our interpretation of the user's performance is better than perfect. 
 
 \section{FUTURE WORK}
-There are several areas of the application that could be improved with more work. 
-First, there is a lot of work that could be done with the note detection component. 
-The current system we believe is a good proof of concept, but it would be frustrating to actually try and compose a melody. 
-We require that note
+There are several areas where substantial improvement could be made to this app.
+First there is a lot more work that we could do on the note detecting component. 
+It currently requires you to sing very clearly and make your notes very clearly separated to pick them up well. 
+It does not support rests, or keep the percurssion and melody in sync.
+Finally, notes tend to get split when they occur at the end of a bar.
+Fortunately we still have lots of tools at our disposal to remedy these shortcomings. 
+There is a wealth of audio processing techniques that could still be incorporated into the app.
 
-
+We also did not implement the MusicXML and MIDI output feature we described in our proposal. 
+These features were not vital to our main focus of music composition, and would not be interesting in their implementation.
+These could be easily implemented later if desired.
 
 
 \nocite{*}
