@@ -16,7 +16,7 @@
  \toappear{}
  %------------------------
 
-\title{Transcribing a Sung or Whistled Melody in the Browser}
+\title{Transcribing a Sung or Whistled Melody in the Browser: Composer}
 
 %%
 %% Note on formatting authors at different institutions, as shown below:
@@ -153,22 +153,25 @@ When a beat is detected, it sits in the buffer until the next beat is detected.
 At that point we can determine the duration of the first beat, so we publish it and remove it from the buffer.
 Then the second beat has to wait. 
 
-\section{OUTPUT}
-Our application will have several different outputs. As the user is working, they will be able to listen to their composition played to them through MIDI. This will give them a preview of the final result and make it possible to edit their composition. When the user is finished, they will have the option to print the sheet music generated, or download a MIDI file of their composition. For simplicity, only common time, 4 quarter notes to a measure, will be used for this musical notation \cite{2004Baird}.
+\section{Output}
+Our application has several modes of output. As the user is working, they are be able to listen to their composition played to them through MIDI. This gives a preview of the final result and makes it possible to edit the composition. When the user is finished with the composition, they are able to print the sheet music using standard browser printing. We had originally wanted to allow for output in MusicXML, which as a widely used music format for digital applications. This format would make this music far more extensible and compatible with other applications that use this standard. However we decided that it would be used in future iterations of this project.   For simplicity, only common time, 4 quarter notes to a measure,  were used for this musical notation, as well as not confusing sharps and flats, but resorting to all flats for any half tone. \cite{2004Baird}.
 
-\section{USER INTERFACE}
-Our main goal in the interface is to keep it as simple as possible. Ideally our interface
-will mostly present a page of empty sheet music. The key affordance we will offer is that 
-when the user starts whistling or singing, notes will begin to appear.
+The Midi output of the application is done using the Midi.js library \cite{midi.js}. This library provides an easy interface for the 
 
-The notes will be animated in with a fade-type animation. As the user will be provided with only a canvas of sheet music and a couple buttons, animations will be vital in providing a good user experience. We would like the users to feel immersed in the program and animations will provide a gateway for this. Animation has been show to increase the appeal of a user interface \cite{2008Dyer}. Check \cite{2012Joshi} for the different types of animations and transitions available with CSS3.  Once the notes are on the page, the user will be able to highlight them and then move them around to different areas of the page, as well as make copies of the notes. Notes will also be able to be changed from different note types, such as half to full, and so on. 
+\section{User Interface}
+Our main goal for the Composer interface was to keep it as simple as possible. We wanted it to be
+easy to understand without much text or unnecessary UI. However, we decided to include a small tutorial that explains the more detailed usages of the application. 
+
+The user interface is based primarily on the open source library Vexflow \cite{vexflow}. This library 
+
+The notes are animated in with a bounce animation.As we described in our earlier proposal, animations were a key part of the user experience. We wanted the users to feel immersed in the program without unnecessary background visual "noise".  Animation has been show to increase the appeal of a user interface \cite{2008Dyer}. Check \cite{2012Joshi} for the different types of animations and transitions available with CSS3.  Once the notes are on the page 
 
 On the screen there will be a couple buttons that allow for the user to change their recording mode, as well as if they are currently recording. The main button will be the record/stop button which will tell the program to start listening for musical input and when it should stop. Another button will deal with whether the user is in beat input mode or melody input mode. Since users  will only be able to input a monochromatic melody, there will be no structure for inputting chords. Therefore the melody input mode will only allow for single note types, whether whistled or hummed. The beat input mode will allow for the users to make non-pitch input, such as clapping or banging on other objects, such as a desk. These will be translated to a drum-type sound which will be used for the actual sound output. 
 
 
 \begin{figure}[t]
-    \caption{Example of simple layout of webpage. Will have blank sheet music and two buttons.}
-    \includegraphics[width=0.5\textwidth]{blank_sheet_music.png}
+    \caption{Example of simple layout of web application.}
+    \includegraphics[width=0.5\textwidth]{blank_page.png}
 \end{figure}
 
 
@@ -180,7 +183,7 @@ On the screen there will be a couple buttons that allow for the user to change t
 
 
 
-\section{IMPLEMENTATION}
+\section{Implementation}
 Our app is going to be implemented in the browser using HTML5 and javascript without any browser plugins like Flash or Silverlight. 
 This has only recently become possible with the inclusion of the web audio api in HTML5. We will also be using open source javascript 
 libraries whenever available to avoid duplicating any programming effort. MIDI.js will provide the midi playback of the user's composition. 
