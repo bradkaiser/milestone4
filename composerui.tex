@@ -49,10 +49,9 @@
 This paper presents a system for transcribing a whistled or sung melody directly into
 musical notation for the purpose of musical composition. We are extending 
 previous work in this area in several ways with a focus on making composition 
-extremely easy for the laymen. First, we are implementing solely in the browser, which
-will make our application much more accessible than if it was an compiled program that had to 
-be downloaded and installed. Second, we will combine signal processing techniques to allow for the more complex case of sung input. 
-Finally, we will include a mechanism for inputting a rhythm. 
+extremely easy for the laymen. First, we are implementing solely in the browser, which makes our application much more accessible than if it was an compiled program that had to 
+be downloaded and installed. Second, we combine signal processing techniques to allow for the more complex case of sung input. 
+Finally, we include a mechanism for inputting a rhythm. 
 
 \classification{
 H.5.1 [Information interfaces and Presentation]:
@@ -72,7 +71,7 @@ Computers have a long history of lowering the barrier of entry to different mode
 manipulate our own photos, and publish our writing. We'd like to extend this ease to musical composition. To write out a musical composition requires
 formal musical skills that most people do not have. However most people do have some innate musical talent, and many could whistle or sing a tune easily. If we could harness these informal skills, we would sidestep a huge
 barrier to entry. There has been successful work in this area, see \cite{2011Toh,2010Shen}. We aim to extend this work by first making our application effortlessly accessible. 
-This entail putting it on the web and implementing in the browser. Second we  will accept voiced input and not just whistling. Third, these implementations are only concerned with melody, we aim to also have the means of inputting a rhythm.
+This entail putting it on the web and implementing in the browser. Second we  accept voiced input and not just whistling. Third, as these previous implementations are only concerned with melody, we also have the means of inputting a rhythm.
 
 \section{IMPLEMENTATION}
 This application was developed for the browser using modern web technologies such as HTML5, CSS3, SVG, and the JavaScript Web Audio API.
@@ -173,6 +172,12 @@ When a beat is detected, it sits in the buffer until the next beat is detected.
 At that point we can determine the duration of the first beat, so we publish it and remove it from the buffer.
 Then the second beat has to wait. 
 
+\begin{figure}[t]
+    \caption{Simple layout of web application.}
+    \includegraphics[width=0.5\textwidth]{blank_page.png}
+\end{figure}
+
+
 \section{Output}
 Our application has several modes of output. As the user is working, they are be able to listen to their composition played to them through MIDI. This gives a preview of the final result and makes it possible to edit the composition. When the user is finished with the composition, they are able to print the sheet music using standard browser printing. We had originally wanted to allow for output in MusicXML, which as a widely used music format for digital applications. This format would make this music far more extensible and compatible with other applications that use this standard. However we decided that it would be used in future iterations of this project.   For simplicity, only common time, 4 quarter notes to a measure,  were used for this musical notation, as well as not confusing sharps and flats, but resorting to all flats for any half tone. \cite{2004Baird}.
 
@@ -182,50 +187,48 @@ The Midi output of the application is done using the Midi.js library \cite{midi.
 Our main goal for the Composer interface was to keep it as simple as possible. We wanted it to be
 easy to understand without much text or unnecessary UI. However, we decided to include a small tutorial that explains the more detailed usages of the application. 
 
-The user interface is based primarily on the open source library Vexflow \cite{vexflow}. This library is currently in an alpha stage, and thus required some modification for our purposes. Vexflow provided the necessary tools for static layout of staves and notes, however it did not provide much in the way of animation or dynamic rendering in general. For ease of use, especially for animations, we used the SVG tools instead of Canvas, so that we could treat each note object as an element in the DOM. We created classes for each note, so that all svg elements related to that note would be linked together. This allowed for us to provide the animations detailed below. We also had to create a way to dynamically render the UI by redrawing all elements when new notes and bars were added. This provided an easy way for us to draw all notes with a few simple method calls. 
-
-The notes are animated in with a bounce animation.As we described in our earlier proposal, animations were a key part of the user experience. We wanted the users to feel immersed in the program without unnecessary background visual "noise".  Animation has been show to increase the appeal of a user interface \cite{2008Dyer}. Check \cite{2012Joshi} for the different types of animations and transitions available with CSS3.  Once the notes are on the page, 
-
-On the screen there will be a couple buttons that allow for the user to change their recording mode, as well as if they are currently recording. The main button will be the record/stop button which will tell the program to start listening for musical input and when it should stop. Another button will deal with whether the user is in beat input mode or melody input mode. Since users  will only be able to input a monochromatic melody, there will be no structure for inputting chords. Therefore the melody input mode will only allow for single note types, whether whistled or hummed. The beat input mode will allow for the users to make non-pitch input, such as clapping or banging on other objects, such as a desk. These will be translated to a drum-type sound which will be used for the actual sound output. 
-
-
 \begin{figure}[t]
-    \caption{Simple layout of web application.}
-    \includegraphics[width=0.5\textwidth, height=0.35\textheight]{blank_page.png}
-\end{figure}
-
-
-\begin{figure}[h]
     \caption{Example of Clefs. Bass and Treble clefs used for melody, bottom bar for Percussion}
     \includegraphics[width=0.5\textwidth]{clefs.png}
 \end{figure}
 
 
+The user interface is based primarily on the open source library Vexflow \cite{vexflow}. This library is currently in an alpha stage, and thus required some modification for our purposes. Vexflow provided the necessary tools for static layout of staves and notes, however it did not provide much in the way of animation or dynamic rendering in general. For ease of use, especially for animations, we used the SVG tools instead of Canvas, so that we could treat each note object as an element in the DOM. We created classes for each note, so that all svg elements related to that note would be linked together. This allowed for us to provide the animations detailed below. We also had to create a way to dynamically render the UI by redrawing all elements when new notes and bars were added. This provided an easy way for us to draw all notes with a few simple method calls. 
+
+The notes are animated in with a bounce animation.As we described in our earlier proposal, animations were a key part of the user experience. We wanted the users to feel immersed in the program without unnecessary background visual "noise".  Animation has been show to increase the appeal of a user interface \cite{2008Dyer}. Check \cite{2012Joshi} for the different types of animations and transitions available with CSS3.  Once the notes are on the page, 
+
+The main interface contains only 4 elements. For buttons, we decided to go with icons for universality. Having buttons with words would limit those people who do not understand English. We have 3 buttons, a recording button, a play button, and an info button. The play button changes to a stop button after a user starts playing the music, and the record button will change as well to indicate if the person is currently recording or not. An example of our interface can be seen in Figure 2. Originally we were going to have a button to change input types from melodic to rhythm; however we decided it would be simpler to allow recording of both at the same time depending on frequency as described previously. The info button was placed to bring up a tutorial that users may want to read to familiarize themselves with all of the controls available within the application. Figure 5 shows this tutorial
+
+As users can generally only whistle or hum one tone, notes will be limited to single notes and not chords in this application. As a user hums or whistles, notes will appear on the screen using the bouncing animation. At any time, the user may highlight a note by double clicking on it. A highlighted note will have a red box appear around it to indicate that it has focus. The user may also at any time press the play button to begin playback. When this happens, the music will begin to playback from either the currently highlighted note, or the beginning if no note is highlighted. To unhighlight all notes, the user must double click anywhere on the application, not on another note. When the music is playing, a blue box will appear around the currently playing note. 
+
+Highlighted notes can be edited in multiple ways. Once a note is highlighted it can be tonally changed by pressing the up and down buttons on the keyboard. This will move the note up and down a half tone respectively. The note can also be moved along the staff by pressing left and right. This will swap the current note with the note previous or after it respectively.  The user is also able to delete a note by pressing the backspace button. Figure 4 shows an example of highlighted and playing notes.
+
+\begin{figure}[t]
+    \caption{Tutorial explains all of the application controls}
+    \includegraphics[width=0.5\textwidth]{tutorial.png}
+\end{figure}
+
+
 \subsection{Affordances}
 
+Affordances are plenty in this application. We used icons to indicate universally what each button will do: The record button records, play button plays, and info button brings up more information about the application. Once the record button is pressed, the button pulses and indicates that the application is currently recording. As the user inputs notes, they will quickly realize that the longer one hums, the longer the note will appear on the page.
 
-Affordance will be plenty, in that with the simple interface, it will be easy for users to know what they should do. The user will be presented with a blank page of sheet music, as well as two buttons, one for recording and one for changing the input type. The users will know that the record button will be used for actually recording the music, and when recording, this button will change to a stop button to show that the user will press it to stop recording.
+In terms of editing of notes, when a user hovers over a note, the cursor changes to a pointing hand, indicating that the note is clickable and thus editable. The tutorial explains in what ways the user can edit the notes.
 
-The user will be able to know that the longer they hum a note, the longer it will appear on the page. This will happen relatively easily, as the user will delve into using the application and pick up very quickly that it responds to the length of time hummed or whistled.
-
-Notes will also have a depth-like quality to them, indicating that they can be picked up and moved on a flat background.
 
 \subsection{Feedback}
-Feedback will include a play button that will allow the user to playback the music that is currently recorded. This will play back in a MIDI format. Once the user has clicked on a certain section of the music, they can playback from that section to the end of recorded music. 
+Feedback includes a play button that, when clicked, changes to a stop button and begins playback from the beginning or a highlighted note. Pressing this stop button will stop the music.
 
-When a user clicks a note, the note will be highlighted, indicating that the note is the current focus of the program. From there the user will be able to change the length of the note, as well as where it is located within the sheet music. If the user clicks on the playback button mentioned above, the music will playback from the highlighted note to the end of the song.
-
-Hovering over a note will change the cursor and show the user that they will be able to interact with individual notes. This is a key feedback mechanism, as it will show the user that they have a more direct control of the music, instead of just microphone input.
+When a user clicks a note, the note is highlighted, indicating that the note is the current focus of the program. From there the user is able to change the tone of the note, by half tones, as well as where it is located within the music. This will be reflected automatically. When the user changes the tone of the note, the new note tone is played and the note is moved up and down vertically in the bar. When the user is moving the note left and right, these changes will be reflected immediately and the user will see the highlighted note move left and right, and the red box will move with it indicating that the note has changed positions. When a user deletes a note, all notes after the deleted note will be moved over and the highlighted box will disappear indicating that the note is gone.
 
 
 \subsection{Mechanics}
-The quality of the mechanics of the user interface of our app depend largely on the quality of our interpretation of the user input. 
-If we are successful in accurately transcribing the user's input, then the mechanics of our app should be excellent, because we will
-be capitalizing on common skills the user practices every day. 
+The quality of the mechanics of the user interface of our app depend largely on the quality of our interpretation of the user input. Since the pitch input is fairly accurate, this provides excellent mechanics as any expert or novice will be able to use the application by doing what they already know how to do: hum or whistle. One way in which we improve upon these basic mechanics is by using note snapping and tone snapping. As humming or whistling will often be off tune a bit, we find the correct tone to match the note to, as well as the correct length depending on 120 bpm typical note lengths. 
 
-We can improve the mechanics of the app further by making use of semantic snapping to gently correct the user's input. Though we are using well 
-practiced skills, the user will probably be off key, and their timing will probably be slightly off.  We will correct this by snapping the input to the nearest quarter 
-tone and standard note duration. This way our interpretation of the user's performance is better than perfect. 
+\begin{figure}[t]
+    \caption{Red boxes indicate a highlighted note. Blue boxes indicate a currently playing note}
+    \includegraphics[width=0.5\textwidth]{highlighted_notes.png}
+\end{figure}
 
 \section{FUTURE WORK}
 There are several areas where substantial improvement could be made to this app.
@@ -239,6 +242,10 @@ There is a wealth of audio processing techniques that could still be incorporate
 We also did not implement the MusicXML and MIDI output feature we described in our proposal. 
 These features were not vital to our main focus of music composition, and would not be interesting in their implementation.
 These could be easily implemented later if desired.
+
+Another aspect of the application that could be improved is the customizability. As of now, the speed of the music is limited to 120 bps, and the time signature is in common time. Users are also not allowed to choose a key signature for the composition as a whole. We would implement this in the future by allowing users to choose from some preset key and time signatures, as well as change the timing of the music for quicker or slower playback. Another improvement with respect to customizability would be with different MIDI playback instruments. Right now we are limited to a synth drum for the percussion and a piano for the melody. We would allow users to choose from other instruments, such as a trumpet, triangle, and other common instruments.
+
+In terms of the user interface, there is one large improvement that could be made. We had originally wanted to allow editing via drag and drop, but it proved to be more difficult to implement in the limited time we had using the alpha Vexflow Library. With more time in the future we believe that this would be possible.  Functionally, we would also like to add editing for the lengths of notes. Right now they can only be moved or tonally changed.
 
 
 \nocite{*}
