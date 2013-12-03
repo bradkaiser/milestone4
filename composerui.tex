@@ -71,7 +71,7 @@ Computers have a long history of lowering the barrier of entry to different mode
 manipulate our own photos, and publish our writing. We'd like to extend this ease to musical composition. To write out a musical composition requires
 formal musical skills that most people do not have. However most people do have some innate musical talent, and many could whistle or sing a tune easily. If we could harness these informal skills, we would sidestep a huge
 barrier to entry. There has been successful work in this area, see \cite{2011Toh,2010Shen}. We aim to extend this work by first making our application effortlessly accessible. 
-This entail putting it on the web and implementing in the browser. Second we  accept voiced input and not just whistling. Third, as these previous implementations are only concerned with melody, we also have the means of inputting a rhythm.
+This entails putting it on the web and implementing in the browser. Second we  accept voiced input and not just whistling. Third, as these previous implementations are only concerned with melody, we also have the means of inputting a rhythm.
 
 \section{IMPLEMENTATION}
 This application was developed for the browser using modern web technologies such as HTML5, CSS3, SVG, and the JavaScript Web Audio API.
@@ -89,7 +89,7 @@ This application needs to solve two major problems.
 How to translate audio input into musical notation, and how to display musical notation output.
 To make development easier we decoupled these two problems.
 We wrote a note detecting engine that sets up the microphone connection using the web audio api and processes the raw audio input.
-When it picks out a note from the microphone it publishes a custom javascript event.
+When it picks out a note from the microphone it publishes a custom javascript event containing the note data.
 We also wrote a note layout engine that listens for these event, and keeps track of a musical staff and can add notes and lay them out correctly.
 When it intercepts a note event, it adds the note to DOM.
 
@@ -114,9 +114,9 @@ There were two big problems with this approach.
 The first is that it does not work at all for sung input, the spectrum of the human voice is complicated, and does not have a clear dominant frequency.
 The second is that at our sampling rate, 44100Hz, we only just have enough time and frequency resolution to separate semitones within the span of a thirty-second note.
 At our 120 bpm a thirty-second note is 62.5 ms long, so we can take at most 2756 samples at a time to analyze.
-Since the discrete fourier transform demands samples in a power of two, we take 2048 samples.
+Since the discrete fourier transform demands samples in a power of two, we can only take 2048 samples at a time.
 With that many samles, we only have a frequency resolution of 21Hz.
-This is enough to differentiate semitones at the relatively high frequencies where whistling occurs, but since the musical scale is logarithmic, it is no longer enough once you get around middle C.
+This is enough to differentiate semitones at the relatively high frequencies where whistling occurs, but since the musical scale is logarithmic, the distance in Hz between each semitone decreases as you go down the scale. By middle C 21Hz is larger than the difference between semitones.
 
 Since we wanted to pitch detect sung as well as whistled input, we tried another pitch detection technique, cepstral analysis pioneered by Noll in 1967 \cite{1967Noll}.
 As Noll explains it, the output of human speech \(f(t)\) is the product of a source signal \(s(t)\) convolved with the response of the vocal tract \(h(t)\). 
@@ -164,13 +164,15 @@ If there are results at the end of the buffer, we leave them to be examined in t
 \subsection{Beat Detection}
 Beat detection was considerably easier than pitch detection. We wanted to be able to detect when a user clapped or snapped, and treat that like a percussion instrument.
 We passed the raw audio input through a high pass filter to remove all of the melodic frequency components. 
-This only left high frequency components from staccatto noises. 
+This leaves only the high frequency components present in short sharp noises, like claps or snaps.
 Then we just registered a percussion event whenever the intensity of the resulting signal passed a certain threshold. 
 We determined the cutoff frequency and power thresholed empirically.
 The only way to determine how long a drum beat should be is to wait for the next drum beat, so for beat detection we set up a two element buffer. 
-When a beat is detected, it sits in the buffer until the next beat is detected.
-At that point we can determine the duration of the first beat, so we publish it and remove it from the buffer.
-Then the second beat has to wait. 
+When a beat is detected, we add it to the buffer.
+When a second beat is detected, add it to the buffer and now, we can determine the duration of the first beat.
+We publish the first beat and remove it from the buffer.
+Then we wait for the next beat.
+
 
 \begin{figure}[t]
     \caption{Simple layout of web application.}
